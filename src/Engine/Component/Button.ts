@@ -1,20 +1,16 @@
 import { Component } from './Component';
 import { InputHandle } from '../InputHandle/InputHandle';
+import { GameObject } from '../GameObject/GameObject';
 
-export class Button extends Component {
-    private size: IVec2;
-    private pos: IVec2;
+export class Button extends GameObject {
     private onClickCallback?: () => void;
     private mouseDownLastFrame: boolean = false;
 
     constructor(size: IVec2, pos: IVec2) {
-        super();
-        this.size = size;
-        this.pos = pos;
+        super(pos, { width: size.x, height: size.y }); 
     }
 
-    public Init(): void {
-    }
+    public Init(): void {}
 
     public setOnClick(callback: () => void) {
         this.onClickCallback = callback;
@@ -22,12 +18,12 @@ export class Button extends Component {
 
     private isMouseInside(mouse: IVec2): boolean {
         return (
-            mouse.x >= this.pos.x && mouse.x <= this.pos.x + this.size.x &&
-            mouse.y >= this.pos.y && mouse.y <= this.pos.y + this.size.y
+            mouse.x >= this.position.x && mouse.x <= this.position.x + this.size.width &&
+            mouse.y >= this.position.y && mouse.y <= this.position.y + this.size.height
         );
     }
 
-    public update(deltaTime: number): void {
+    public Update(deltaTime: number): void {
         const mouse = InputHandle.getMouse();
         const mouseDown = InputHandle.isMouseDown();
         if (mouse && mouseDown && !this.mouseDownLastFrame && this.isMouseInside(mouse)) {
@@ -42,7 +38,5 @@ export class Button extends Component {
         }
     }
 
-    public render(renderer: Engine.IRenderer, x: number = this.pos.x, y: number = this.pos.y): void {
-            //renderer.drawRect(x, y, this.size.x, this.size.y); 
-    }
+    
 }

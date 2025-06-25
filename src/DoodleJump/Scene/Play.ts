@@ -1,188 +1,205 @@
 import { DashboardScene } from './Dashboard';
-import { Collision } from './../../Engine/ResourceManager/Collision';
-import { Animation } from './../../Engine/Component/Animation';
-import { Physic2D } from './../../Engine/Component/Physic2D';
-import { ResourceManager} from './../../Engine/ResourceManager/resourceManage';
-import { Button } from './../../Engine/Component/Button';
+import { Collision } from '../../Engine/ResourceManager/Collision';
+import { Animation } from '../../Engine/Component/Animation';
+import { Physic2D } from '../../Engine/Component/Physic2D';
+import { ResourceManager } from '../../Engine/ResourceManager/resourceManage';
+import { Button } from '../../Engine/Component/Button';
 import { GameObject } from "../../Engine/GameObject/GameObject";
-import { Platform } from "./Object/Platform"
-import { Scene, SceneName } from "../../Engine/GameScene/Scene/Scene";
+import { Scene } from "../../Engine/GameScene/Scene/Scene";
 import { SceneManager } from '../../Engine/GameScene/Scene/SceneManager';
 import { InputHandle } from '../../Engine/InputHandle/InputHandle';
+import { PlatformManager } from './Object/Platform/PlatformManager';
 
-export class PlayScene extends Scene{
-    private PlayButton: GameObject;
-    private anim1: Animation;
-    private Background: GameObject;
-    private Physic2D: Physic2D;
-    private Player: GameObject;
-    private Collision: Collision;
-    private listPlatform: Platform[] = [];
-    private Butt: Button;
-    private isJump: boolean = false;
-    private cameraY: number = 0;
-    private playerFixedY: number = 300; 
+export class PlayScene extends Scene {
+    // UI Components
+    private background: GameObject;
+    private button: Button;
+    
+    // Player related
+    private player: GameObject;
+    private playerAnimation: Animation;
+    private playerPhysics: Physic2D;
+    private readonly PLAYER_FIXED_Y: number = 300;
+    private readonly PLAYER_MOVE_SPEED: number = 300;
+    private readonly PLAYER_SIZE = { width: 40, height: 40 };
+    private readonly SCREEN_WIDTH: number = 400;
+    
+    // Game state
+    private collision: Collision;
+    private isJumping: boolean = false;
+    private highScore: number = 0;
+    
+    // Platform manager
+    private platformManager: PlatformManager;
     
     constructor() {
         super();
-        this.Collision = new Collision();
-        this.Player = new GameObject({ x: 200, y: this.playerFixedY }, { width: 40, height: 40 });
-        this.anim1 = new Animation(ResourceManager.getInstance().getTexture('blue-lik-left'), { x: 1, y: 1 }, 0.1);
-        this.Physic2D = new Physic2D({ x: 200, y: this.playerFixedY }, this.Player.getComponentByName('HitBox') as Engine.IHitBox);
-        this.Background = new GameObject({ x: 0, y: 0 }, { width: 900, height: 900 });
-
-        this.createPlatforms();
+        this.initializeComponents();
+        this.platformManager = new PlatformManager(this.player, this.collision);
     }
-    // Create random platform
-    private createPlatforms(): void {
-        for (let i = 0; i < 20; i++) {
-            const x = Math.random() * (400);
-            const y = 600 + (i * -100); 
-            
-            let platformType: 'normal' | 'spring' | 'moving' | 'invi' = 'normal';
-            if (i > 2) {   // make sure first platform is normal :D
-                const random = Math.random();
-                if (random < 0.7) {
-                    platformType = 'normal';
-                } else if (random < 0.85) {
-                    platformType = 'spring';
-                } else if (random < 0.95) {
-                    platformType = 'moving';
-                } else {
-                    platformType = 'invi';
-                }
-            }
-            
-            const plat = new Platform(x, y, platformType);
-            this.Collision.addHitBox(plat.hitbox);
-            this.listPlatform.push(plat);
-        }
+    
+    private initializeComponents(): void {
+        // Initialize collision system
+        this.collision = new Collision();
+        
+        // Initialize player
+        this.player = new GameObject(
+            { x: 200, y: this.PLAYER_FIXED_Y }, 
+            this.PLAYER_SIZE
+        );
+        
+        // Initialize player animation
+        this.playerAnimation = new Animation(
+            ResourceManager.getInstance().getTexture('blue-lik-left'), 
+            { x: 1, y: 1 }, 
+            0.1
+        );
+        
+        this.playerPhysics = new Physic2D(
+            { x: 200, y: this.PLAYER_FIXED_Y }, 
+            this.player.hitbox
+        );
+        
+        // Initialize background
+        this.background = new GameObject(
+            { x: 0, y: 0 }, 
+            { width: 900, height: 900 }
+        );
     }
-
+    
     public Init(): void {
-        this.Collision.addHitBox(this.Player.hitbox);
-        this.Player.AddComponent(this.anim1);
-        this.Player.AddComponent(this.Physic2D);
-        this.Background.AddImage(ResourceManager.getInstance().getTexture('background'));
+        // Setup player components
+        this.collision.addHitBox(this.player.hitbox);
+        this.player.AddComponent(this.playerAnimation);
+        this.player.AddComponent(this.playerPhysics);
+        
+        // Setup background
+        this.background.AddImage(ResourceManager.getInstance().getTexture('background'));
     }
     
     public update(deltaTime: number): void {
-        const currentVelocity = this.Physic2D.getVelocity();
-        const moveSpeed = 300; 
-        // move player
+        this.handlePlayerInput();
+        this.updatePlayerBoundaries();
+        this.updateGameObjects(deltaTime);
+        this.handleCameraFollow();
+        this.platformManager.handlePlatformRecycling();
+        this.handleCollisions();
+        this.checkGameOver();
+    }
+    
+    private handlePlayerInput(): void {
+        const currentVelocity = this.playerPhysics.getVelocity();
+        
         if (InputHandle.isKeyDown('ArrowRight')) {
-            this.Physic2D.setVelocity({x: moveSpeed, y: currentVelocity.y});
+            this.playerPhysics.setVelocity({
+                x: this.PLAYER_MOVE_SPEED, 
+                y: currentVelocity.y
+            });
         } else if (InputHandle.isKeyDown('ArrowLeft')) {
-            this.Physic2D.setVelocity({x: -moveSpeed, y: currentVelocity.y});
+            this.playerPhysics.setVelocity({
+                x: -this.PLAYER_MOVE_SPEED, 
+                y: currentVelocity.y
+            });
         } else {
-            this.Physic2D.setVelocity({x: 0, y: currentVelocity.y});
+            this.playerPhysics.setVelocity({
+                x: 0, 
+                y: currentVelocity.y
+            });
         }
-        // make sure player stay in da screen
-        if (this.Player.position.x > 400) {
-            this.Player.position.x = 0;
-            this.Physic2D.setPosition({x: 0, y: this.Player.position.y});
-        } else if (this.Player.position.x < 0) {
-            this.Player.position.x = 400;
-            this.Physic2D.setPosition({x: 400, y: this.Player.position.y});
+    }
+    
+    private updatePlayerBoundaries(): void {
+        const playerWidth = this.player.size.width;
+        
+        // Wrap player around screen edges
+        if (this.player.position.x > this.SCREEN_WIDTH + playerWidth) {
+            this.setPlayerPosition(0, this.player.position.y);
+        } else if (this.player.position.x < -playerWidth) {
+            this.setPlayerPosition(this.SCREEN_WIDTH, this.player.position.y);
         }
+    }
+    
+    private setPlayerPosition(x: number, y: number): void {
+        this.player.position.x = x;
+        this.player.position.y = y;
+        this.playerPhysics.setPosition({ x, y });
+    }
+    
+    private updateGameObjects(deltaTime: number): void {
+        this.player.Update(deltaTime);
+        this.platformManager.update(deltaTime);
+    }
+    
+    private handleCameraFollow(): void {
+        const velocityY = this.playerPhysics.getVelocity().y;
         
-        this.Player.Update(deltaTime);
-        
-        for (let platform of this.listPlatform) {
-            platform.Update(deltaTime);
+        // Only move camera when player is moving up and above fixed position
+        if (this.player.position.y < this.PLAYER_FIXED_Y && velocityY < 0) {
+            const cameraOffset = this.PLAYER_FIXED_Y - this.player.position.y;
+            this.platformManager.movePlatformsDown(cameraOffset);
+            this.setPlayerPosition(this.player.position.x, this.PLAYER_FIXED_Y);
+            this.updateScore(cameraOffset);
         }
+    }
+    
+    private updateScore(offset: number): void {
+        this.highScore += offset;
+    }
+    
+    private handleCollisions(): void {
+        const velocityY = this.playerPhysics.getVelocity().y;
         
-        const velocityY = this.Physic2D.getVelocity().y;
-        
-        if (this.Player.position.y < this.playerFixedY && velocityY < 0) {
-            const offset = this.playerFixedY - this.Player.position.y;
-            
-            for (let platform of this.listPlatform) {
-                platform.position.y += offset;
-                platform.hitbox.setPosition(platform.position);
-            }
-            
-            this.Player.position.y = this.playerFixedY;
-            this.Physic2D.setPosition({x: this.Player.position.x, y: this.playerFixedY});
-            
-            this.cameraY += offset;
-        }
-        
-        this.recyclePlatforms();
-        
-        if (this.checkPlayerPlatformCollision()) {
-            if (!this.isJump && velocityY > 0) { // Chỉ nhảy khi đang rơi xuống
-                this.isJump = true;
+        if (this.platformManager.checkPlayerCollision(this.playerPhysics)) {
+            if (!this.isJumping && velocityY > 0) {
+                this.isJumping = true;
             }
         } else {
-            this.isJump = false;
-        }
-        
-        if (this.Player.position.y > 800) {
-            //this.restartGame();
-             SceneManager.getInstance().pushScene(SceneName.DashboardScene);
+            this.isJumping = false;
         }
     }
     
-    private recyclePlatforms(): void {
-        let highestY = Math.min(...this.listPlatform.map(p => p.position.y));
-        
-        for (let platform of this.listPlatform) {
-            if (platform.position.y > 900) {
-                const newX = Math.random() * (400);
-                const newY = highestY - (80 + Math.random() * 40); 
-                
-                platform.resetPosition(newX, newY);
-                
-                highestY = newY;
-            }
+    private checkGameOver(): void {
+        if (this.player.position.y > 800) {
+            this.handleGameOver();
         }
     }
     
-    private checkPlayerPlatformCollision(): boolean {
-        const playerHitbox = this.Player.hitbox;
-        
-        for (let platform of this.listPlatform) {
-            if (!platform.isActivePlatform) continue; 
-            
-            if (playerHitbox.intersects(platform.hitbox)) {
-                const playerBottom = this.Player.position.y + this.Player.size.height;
-                const platformTop = platform.position.y;
-                
-                if (Math.abs(playerBottom - platformTop) < 10) {
-                    const jumpForce = platform.onPlayerLand();
-                    this.Physic2D.setVelocity({
-                        x: this.Physic2D.getVelocity().x, 
-                        y: jumpForce
-                    });
-                    return true;
-                }
-            }
-        }
-        return false;
+    private handleGameOver(): void {
+        console.log(`Game Over! High Score: ${Math.floor(this.highScore)}`);
+        SceneManager.getInstance().changeSceneByName('DashboardScene');
     }
     
-    private restartGame(): void {
-        this.Player.position.y = this.playerFixedY;
-        this.Player.position.x = 200;
-        this.Physic2D.setPosition({x: 200, y: this.playerFixedY});
-        this.Physic2D.setVelocity({x: 0, y: 0});
-        this.cameraY = 0;
-        
-        for (let i = 0; i < this.listPlatform.length; i++) {
-            const newX = Math.random() * (400 - 68);
-            const newY = 600 + (i * -100);
-            this.listPlatform[i].resetPosition(newX, newY);
-        }
+    public exit(): void {
+        this.resetPlayerState();
+        this.platformManager.reset();
+        this.resetGameState();
     }
-
-    public render(Renderer: Engine.IRenderer): void {
-        this.Background.Render(Renderer);
-        
-        for (const platform of this.listPlatform) {
-            platform.Render(Renderer);
-        }
-        
-        this.Player.Render(Renderer);
+    
+    private resetPlayerState(): void {
+        this.setPlayerPosition(200, this.PLAYER_FIXED_Y);
+        this.playerPhysics.setVelocity({ x: 0, y: 0 });
+    }
+    
+    private resetGameState(): void {
+        this.highScore = 0;
+        this.isJumping = false;
+    }
+    
+    public render(renderer: Engine.IRenderer): void {
+        this.background.Render(renderer);
+        this.platformManager.render(renderer);
+        this.player.Render(renderer);
+    }
+    
+    public getHighScore(): number {
+        return Math.floor(this.highScore);
+    }
+    
+    public getPlatformCount(): number {
+        return this.platformManager.getPlatformCount();
+    }
+    
+    public getActivePlatformCount(): number {
+        return this.platformManager.getActivePlatformCount();
     }
 }

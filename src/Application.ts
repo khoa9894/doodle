@@ -1,14 +1,13 @@
+import { SceneBootstrapper } from './Engine/GameScene/Scene/SceneInit';
 import { Renderer } from './Engine/Graphic/GraphicRender';
 import { SceneManager } from './Engine/GameScene/Scene/SceneManager';
-import { SceneName } from './Engine/GameScene/Scene/Scene';
 import { InputHandle } from './Engine/InputHandle/InputHandle';
 export class Application{
     private Renderer: Renderer;
     private lastTime: number = 0;
-
     public Init():void{
-        SceneManager.getInstance().changeSceneByName(SceneName.DashboardScene)
-        
+        SceneBootstrapper.bootstrapScenes();
+        SceneManager.getInstance().changeSceneByName('DashboardScene')
         this.Renderer=new Renderer();
         InputHandle.initialize(  this.Renderer.getCanvas());
     }
@@ -26,9 +25,6 @@ export class Application{
         requestAnimationFrame(loop);
     }
     public Update(deltaTime: number){
-        if(SceneManager.getInstance().needToChangeScene()){
-            SceneManager.getInstance().performSceneChange();
-        }
         SceneManager.getInstance().getCurrentScene()?.update(deltaTime);
     }
     public Render(){

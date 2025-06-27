@@ -44,7 +44,7 @@ export abstract class Platform extends GameObject {
         this.onReset();
     }
     
-    protected onReset(): void {
+    public onReset(): void {
     }
     
     public setRandomPosition(minY: number, maxY: number): void {
@@ -61,4 +61,5 @@ export abstract class Platform extends GameObject {
         if (!this.isActive) return;
         super.Render(renderer);
     }
+
 }

@@ -43,7 +43,9 @@ export class Animation extends Component  {
             x, y, this.frameParam.x, this.frameParam.y
         );
     }
-
+    public setTexture(texture: HTMLImageElement): void{
+        this.texture=texture;
+    }
     public reset() {
         this.currentFrame = 0;
         this.clock = 0;

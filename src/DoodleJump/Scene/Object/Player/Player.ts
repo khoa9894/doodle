@@ -8,59 +8,103 @@ export class Player {
     private gameObject: GameObject;
     private animation: Animation;
     private physics: Physic2D;
-    
+    private isRocketActive: boolean = false;
+    // Constants
+    private readonly FIXED_Y: number = 300;
     private readonly MOVE_SPEED: number = 300;
+    private readonly SIZE = { width: 40, height: 40 };
     private readonly SCREEN_WIDTH: number = 400;
     
-    constructor(position: IVec2, size: { width: number; height: number }) {
-        // Khởi tạo GameObject
-        this.gameObject = new GameObject(position, size);
-        
-        // Khởi tạo Animation
-        this.animation = new Animation(
-            ResourceManager.getInstance().getTexture('blue-lik-left'),
-            { x: 1, y: 1 },
-            0.1
+    // State
+    private isJumping: boolean = false;
+    
+    constructor() {
+        this.initializePlayer();
+    }
+
+
+
+public activateRocketMode(): void {
+    this.isRocketActive = true;
+    console.log('cc')
+    //this.animation.setTexture(ResourceManager.getInstance().getTexture('fu'))
+}
+
+public deactivateRocketMode(): void {
+    this.isRocketActive = false;
+   // this.animation.setTexture(ResourceManager.getInstance().getTexture('blue-lik-left'))
+}
+
+public isInRocketMode(): boolean {
+    return this.isRocketActive;
+}
+
+public update(deltaTime: number): void {
+    this.handleInput();
+    this.updateBoundaries();
+    
+    // Kiểm tra nếu đang trong rocket mode theo velocity
+    const velocity = this.physics.getVelocity();
+    if (velocity.y ==-1500) {
+        if (!this.isRocketActive) {
+            this.activateRocketMode();
+        }
+    } else {
+        if (this.isRocketActive) {
+            this.deactivateRocketMode();
+        }
+    }
+    
+    this.gameObject.Update(deltaTime);
+}
+    private initializePlayer(): void {
+        // Create game object
+        this.gameObject = new GameObject(
+            { x: 200, y: this.FIXED_Y }, 
+            this.SIZE
         );
         
-        // Khởi tạo Physics
-        this.physics = new Physic2D(position, this.gameObject.hitbox);
+        // Initialize animation
         
-        // Thêm các component vào GameObject
-        this.gameObject.AddComponent(this.animation);
+        
+        // Initialize physics
+        this.physics = new Physic2D(
+            { x: 200, y: this.FIXED_Y }, 
+            this.gameObject.hitbox
+        );
+        
+        // Add components to game object
         this.gameObject.AddComponent(this.physics);
     }
     
-    public init(): void {
-        // Khởi tạo các giá trị ban đầu nếu cần
-    }
-    
-    public update(deltaTime: number): void {
-        this.handleInput();
-        this.updateBoundaries();
-        this.gameObject.Update(deltaTime);
-    }
-    
-    public render(renderer: Engine.IRenderer): void {
-        this.gameObject.Render(renderer);
-    }
+   public InitAnimation():void{
+this.animation = new Animation(
+            ResourceManager.getInstance().getTexture('blue-lik-left'), 
+            { x: 1, y: 1 }, 
+            0
+        );
+                this.gameObject.AddComponent(this.animation);
+
+   }
     
     private handleInput(): void {
         const currentVelocity = this.physics.getVelocity();
-        
+        this.getPhysics
         if (InputHandle.isKeyDown('ArrowRight')) {
             this.physics.setVelocity({
-                x: this.MOVE_SPEED,
+                x: this.MOVE_SPEED, 
                 y: currentVelocity.y
             });
+            this.animation.setTexture(ResourceManager.getInstance().getTexture('blue-lik-right'))
         } else if (InputHandle.isKeyDown('ArrowLeft')) {
             this.physics.setVelocity({
-                x: -this.MOVE_SPEED,
+                x: -this.MOVE_SPEED, 
                 y: currentVelocity.y
             });
+            this.animation.setTexture(ResourceManager.getInstance().getTexture('blue-lik-left'))
         } else {
             this.physics.setVelocity({
-                x: 0,
+                x: 0, 
                 y: currentVelocity.y
             });
         }
@@ -83,35 +127,48 @@ export class Player {
         this.physics.setPosition({ x, y });
     }
     
-    public setVelocity(velocity: IVec2): void {
-        this.physics.setVelocity(velocity);
+    public resetPosition(): void {
+        this.setPosition(200, this.FIXED_Y);
+        this.physics.setVelocity({ x: 0, y: 0 });
     }
     
-    public getVelocity(): IVec2 {
-        return this.physics.getVelocity();
-    }
+    public render(renderer: Engine.IRenderer): void {
+      //console.log(this.isRocketActive)
+       
+        this.gameObject.Render(renderer);
     
-    public getPosition(): IVec2 {
-        return { 
-            x: this.gameObject.position.x, 
-            y: this.gameObject.position.y 
-        };
-    }
+}
     
+    // Getters
     public getGameObject(): GameObject {
         return this.gameObject;
     }
     
-    public getHitbox(): any {
-        return this.gameObject.hitbox;
+    public getPhysics(): Physic2D {
+        return this.physics;
+    }
+    
+    public getPosition(): { x: number; y: number } {
+        return this.gameObject.position;
     }
     
     public getSize(): { width: number; height: number } {
         return this.gameObject.size;
     }
     
-    public reset(position: IVec2): void {
-        this.setPosition(position.x, position.y);
-        this.setVelocity({ x: 0, y: 0 });
+    public getFixedY(): number {
+        return this.FIXED_Y;
+    }
+    
+    public getIsJumping(): boolean {
+        return this.isJumping;
+    }
+    
+    public setIsJumping(jumping: boolean): void {
+        this.isJumping = jumping;
+    }
+    
+    public getVelocity(): IVec2 {
+        return this.physics.getVelocity();
     }
 }

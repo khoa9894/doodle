@@ -7,9 +7,10 @@ export class Application{
     private lastTime: number = 0;
     public Init():void{
         SceneBootstrapper.bootstrapScenes();
-        SceneManager.getInstance().changeSceneByName('DashboardScene')
+        
         this.Renderer=new Renderer();
-        InputHandle.initialize(  this.Renderer.getCanvas());
+        InputHandle.initialize( this.Renderer.getCanvas());
+        //SceneManager.getInstance().changeSceneByName('DashboardScene')
     }
     public Run():void{
         this.Init();
@@ -26,9 +27,10 @@ export class Application{
     }
     public Update(deltaTime: number){
         SceneManager.getInstance().getCurrentScene()?.update(deltaTime);
+        //SceneManager.getInstance().getCurrentSceneByName()
     }
     public Render(){
-                SceneManager.getInstance().getCurrentScene()?.render(this.Renderer);
+         SceneManager.getInstance().getCurrentScene()?.render(this.Renderer);
 
     }
 }

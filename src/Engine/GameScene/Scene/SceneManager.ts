@@ -1,5 +1,7 @@
+//import { PlayScene } from './../../../DoodleJump/Scene/Play';
 import { Scene } from "./Scene";
-
+import { PlayScene } from '../../../DoodleJump/Scene/Play';
+import { DashboardScene } from '../../../DoodleJump/Scene/Dashboard';
 export type SceneName = string;
 
 export class SceneManager {
@@ -27,15 +29,16 @@ export class SceneManager {
     public changeScene(scene: Scene): void {
         if(this.currentScene==null){
             this.currentScene = scene;
-
+           // this.currentScene.Init();
         }
         else{
              this.currentScene?.exit();
             this.currentScene = scene;
+           // this.currentScene.Init();
         }
      
     }
-
+   
     public changeSceneByName(name: SceneName): void {
         const scene = this.getScene(name);
         if (scene) {

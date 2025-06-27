@@ -34,6 +34,7 @@ export class GameObject  {
     public Update(deltaTime: number): void {
         if (!this._active) return;
         this.setPosition({x:this.hitbox.getPosX(), y:this.hitbox.getPosY()})
+      
         for (const component of this._listComponent) {
             if (component.update) {
                 component.update(deltaTime);
@@ -48,13 +49,14 @@ export class GameObject  {
                 }
             }
         }
-    public getComponentByName(name: string) {
-        const found = this._listComponent.find(c => c.constructor.name === name);
-        if (!found) {
-            throw new Error('deo co');
+    public getComponent<T extends Engine.IComponent>(typeName: string): T | null {
+    for (const component of this._listComponent) {
+        if (component.constructor.name === typeName) {
+            return component as T;
         }
-        return found;
     }
+    return null;
+}
     get position(): { x: number; y: number } {
         return this._position;
     }

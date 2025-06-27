@@ -35,7 +35,12 @@ export class Renderer implements Engine.IRenderer {
             this.ctx.drawImage(image, x, y);
    }
 
-
+public fillRect(x: number, y: number, width: number, height: number, color: string): void {
+    this.ctx.save();
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(x, y, width, height);
+    this.ctx.restore();
+}
     public drawRect(x: number, y: number, width: number, height: number): void {
         this.ctx.save();
         this.ctx.strokeStyle = 'red';
@@ -53,7 +58,25 @@ export class Renderer implements Engine.IRenderer {
         this.ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
     }
 
-   
+    public drawText(
+    text: string, 
+    x: number, 
+    y: number, 
+    font: string = "20px Arial", 
+    textAlign: CanvasTextAlign = "center", 
+    color: string = "black"
+): void {
+    if (!this.ctx) return;
+       this.ctx.save();
+    
+    this.ctx.font = font;
+    this.ctx.textAlign = textAlign;
+    this.ctx.fillStyle = color;
+    
+    this.ctx.fillText(text, x, y);
+    
+    this.ctx.restore();
+}
     public getCanvas(): HTMLCanvasElement {
         return this.canvas;
     }

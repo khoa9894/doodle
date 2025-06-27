@@ -46,7 +46,7 @@ export class MovingPlatform extends Platform {
         this.hitbox.setPosition(this.position);
     }
     
-    protected onReset(): void {
+    public onReset(): void {
         this.originalX = this.position.x;
         this.moveDirection = 1;
     }

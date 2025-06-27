@@ -1,33 +1,24 @@
-import { DashboardScene } from './Dashboard';
 import { Collision } from '../../Engine/ResourceManager/Collision';
-import { Animation } from '../../Engine/Component/Animation';
-import { Physic2D } from '../../Engine/Component/Physic2D';
 import { ResourceManager } from '../../Engine/ResourceManager/resourceManage';
 import { Button } from '../../Engine/Component/Button';
 import { GameObject } from "../../Engine/GameObject/GameObject";
 import { Scene } from "../../Engine/GameScene/Scene/Scene";
 import { SceneManager } from '../../Engine/GameScene/Scene/SceneManager';
-import { InputHandle } from '../../Engine/InputHandle/InputHandle';
 import { PlatformManager } from './Object/Platform/PlatformManager';
+import { Player } from './Object/Player/Player';
 
 export class PlayScene extends Scene {
     // UI Components
     private background: GameObject;
     private button: Button;
     
-    // Player related
-    private player: GameObject;
-    private playerAnimation: Animation;
-    private playerPhysics: Physic2D;
-    private readonly PLAYER_FIXED_Y: number = 300;
-    private readonly PLAYER_MOVE_SPEED: number = 300;
-    private readonly PLAYER_SIZE = { width: 40, height: 40 };
-    private readonly SCREEN_WIDTH: number = 400;
+    // Player
+    private player: Player;
     
     // Game state
     private collision: Collision;
-    private isJumping: boolean = false;
-    private highScore: number = 0;
+    private currentScore: number = 0; 
+    private highScore: number = 0;    
     
     // Platform manager
     private platformManager: PlatformManager;
@@ -35,7 +26,23 @@ export class PlayScene extends Scene {
     constructor() {
         super();
         this.initializeComponents();
-        this.platformManager = new PlatformManager(this.player, this.collision);
+        this.platformManager = new PlatformManager(this.player.getGameObject(), this.collision);
+        this.loadHighScore(); 
+    }
+    
+    private loadHighScore(): void {
+        const savedHighScore = localStorage.getItem('doodleJumpHighScore');
+        if (savedHighScore) {
+            this.highScore = parseInt(savedHighScore);
+        }
+    }
+    
+    private saveHighScore(): void {
+        localStorage.setItem('doodleJumpHighScore', this.highScore.toString());
+    }
+    
+    private saveCurrentScore(): void {
+        localStorage.setItem('doodleJumpCurrentScore', this.currentScore.toString());
     }
     
     private initializeComponents(): void {
@@ -43,22 +50,7 @@ export class PlayScene extends Scene {
         this.collision = new Collision();
         
         // Initialize player
-        this.player = new GameObject(
-            { x: 200, y: this.PLAYER_FIXED_Y }, 
-            this.PLAYER_SIZE
-        );
-        
-        // Initialize player animation
-        this.playerAnimation = new Animation(
-            ResourceManager.getInstance().getTexture('blue-lik-left'), 
-            { x: 1, y: 1 }, 
-            0.1
-        );
-        
-        this.playerPhysics = new Physic2D(
-            { x: 200, y: this.PLAYER_FIXED_Y }, 
-            this.player.hitbox
-        );
+        this.player = new Player();
         
         // Initialize background
         this.background = new GameObject(
@@ -68,18 +60,13 @@ export class PlayScene extends Scene {
     }
     
     public Init(): void {
-        // Setup player components
-        this.collision.addHitBox(this.player.hitbox);
-        this.player.AddComponent(this.playerAnimation);
-        this.player.AddComponent(this.playerPhysics);
-        
-        // Setup background
+        this.player.InitAnimation()
+        this.collision.addHitBox(this.player.getGameObject().hitbox);
         this.background.AddImage(ResourceManager.getInstance().getTexture('background'));
+        this.loadHighScore(); 
     }
     
     public update(deltaTime: number): void {
-        this.handlePlayerInput();
-        this.updatePlayerBoundaries();
         this.updateGameObjects(deltaTime);
         this.handleCameraFollow();
         this.platformManager.handlePlatformRecycling();
@@ -87,85 +74,52 @@ export class PlayScene extends Scene {
         this.checkGameOver();
     }
     
-    private handlePlayerInput(): void {
-        const currentVelocity = this.playerPhysics.getVelocity();
-        
-        if (InputHandle.isKeyDown('ArrowRight')) {
-            this.playerPhysics.setVelocity({
-                x: this.PLAYER_MOVE_SPEED, 
-                y: currentVelocity.y
-            });
-        } else if (InputHandle.isKeyDown('ArrowLeft')) {
-            this.playerPhysics.setVelocity({
-                x: -this.PLAYER_MOVE_SPEED, 
-                y: currentVelocity.y
-            });
-        } else {
-            this.playerPhysics.setVelocity({
-                x: 0, 
-                y: currentVelocity.y
-            });
-        }
-    }
-    
-    private updatePlayerBoundaries(): void {
-        const playerWidth = this.player.size.width;
-        
-        // Wrap player around screen edges
-        if (this.player.position.x > this.SCREEN_WIDTH + playerWidth) {
-            this.setPlayerPosition(0, this.player.position.y);
-        } else if (this.player.position.x < -playerWidth) {
-            this.setPlayerPosition(this.SCREEN_WIDTH, this.player.position.y);
-        }
-    }
-    
-    private setPlayerPosition(x: number, y: number): void {
-        this.player.position.x = x;
-        this.player.position.y = y;
-        this.playerPhysics.setPosition({ x, y });
-    }
-    
     private updateGameObjects(deltaTime: number): void {
-        this.player.Update(deltaTime);
+        this.player.update(deltaTime);
         this.platformManager.update(deltaTime);
     }
     
     private handleCameraFollow(): void {
-        const velocityY = this.playerPhysics.getVelocity().y;
+        const playerPosition = this.player.getPosition();
+        const playerVelocity = this.player.getVelocity();
+        const playerFixedY = this.player.getFixedY();
         
-        // Only move camera when player is moving up and above fixed position
-        if (this.player.position.y < this.PLAYER_FIXED_Y && velocityY < 0) {
-            const cameraOffset = this.PLAYER_FIXED_Y - this.player.position.y;
+        if (playerPosition.y < playerFixedY && playerVelocity.y < 0) {
+            const cameraOffset = playerFixedY - playerPosition.y;
             this.platformManager.movePlatformsDown(cameraOffset);
-            this.setPlayerPosition(this.player.position.x, this.PLAYER_FIXED_Y);
+            this.player.setPosition(playerPosition.x, playerFixedY);
             this.updateScore(cameraOffset);
         }
     }
     
     private updateScore(offset: number): void {
-        this.highScore += offset;
+        this.currentScore += offset; 
+                if (Math.floor(this.currentScore) > this.highScore) {
+            this.highScore = Math.floor(this.currentScore);
+        }
     }
     
     private handleCollisions(): void {
-        const velocityY = this.playerPhysics.getVelocity().y;
+        const playerVelocity = this.player.getVelocity();
         
-        if (this.platformManager.checkPlayerCollision(this.playerPhysics)) {
-            if (!this.isJumping && velocityY > 0) {
-                this.isJumping = true;
+        if (this.platformManager.checkPlayerCollision(this.player.getPhysics())) {
+            if (!this.player.getIsJumping() && playerVelocity.y > 0) {
+                this.player.setIsJumping(true);
             }
         } else {
-            this.isJumping = false;
+            this.player.setIsJumping(false);
         }
     }
     
     private checkGameOver(): void {
-        if (this.player.position.y > 800) {
+        if (this.player.getPosition().y > 700) {
             this.handleGameOver();
         }
     }
     
     private handleGameOver(): void {
-        console.log(`Game Over! High Score: ${Math.floor(this.highScore)}`);
+        this.saveHighScore();
+        this.saveCurrentScore();
         SceneManager.getInstance().changeSceneByName('DashboardScene');
     }
     
@@ -176,23 +130,35 @@ export class PlayScene extends Scene {
     }
     
     private resetPlayerState(): void {
-        this.setPlayerPosition(200, this.PLAYER_FIXED_Y);
-        this.playerPhysics.setVelocity({ x: 0, y: 0 });
+        this.player.resetPosition();
     }
     
     private resetGameState(): void {
-        this.highScore = 0;
-        this.isJumping = false;
+        this.currentScore = 0;
     }
     
     public render(renderer: Engine.IRenderer): void {
         this.background.Render(renderer);
         this.platformManager.render(renderer);
-        this.player.Render(renderer);
+        this.player.render(renderer);
+        
+        const scoreText = `Score: ${Math.floor(this.currentScore)}`;
+        renderer.drawText(
+            scoreText, 
+            250,  
+            50,  
+            "40px Arial",  
+            "center",      
+            "Black"        
+        );
+    }
+    
+    public getCurrentScore(): number {
+        return Math.floor(this.currentScore);
     }
     
     public getHighScore(): number {
-        return Math.floor(this.highScore);
+        return this.highScore;
     }
     
     public getPlatformCount(): number {

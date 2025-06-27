@@ -4,7 +4,9 @@ import { GameObject } from '../GameObject/GameObject';
 
 export class Button extends GameObject {
     private onClickCallback?: () => void;
-    private mouseDownLastFrame: boolean = false;
+    private wasMouseDownLastFrame: boolean = false;
+    private cooldownTimer: number = 0;
+    private isPressed: boolean = false;
 
     constructor(size: IVec2, pos: IVec2) {
         super(pos, { width: size.x, height: size.y }); 
@@ -15,28 +17,50 @@ export class Button extends GameObject {
     public setOnClick(callback: () => void) {
         this.onClickCallback = callback;
     }
-
+    
+    public resetState(): void {
+        this.wasMouseDownLastFrame = false;
+        this.isPressed = false;
+       // this.cooldownTimer = 0.2; 
+    }
+    
     private isMouseInside(mouse: IVec2): boolean {
         return (
-            mouse.x >= this.position.x && mouse.x <= this.position.x + this.size.width &&
-            mouse.y >= this.position.y && mouse.y <= this.position.y + this.size.height
+            mouse.x >= this.position.x && 
+            mouse.x <= this.position.x + this.size.width &&
+            mouse.y >= this.position.y && 
+            mouse.y <= this.position.y + this.size.height
         );
     }
 
     public Update(deltaTime: number): void {
+        // Giảm cooldown timer
+        if (this.cooldownTimer > 0) {
+            this.cooldownTimer -= deltaTime;
+        }
+        
         const mouse = InputHandle.getMouse();
-        const mouseDown = InputHandle.isMouseDown();
-        if (mouse && mouseDown && !this.mouseDownLastFrame && this.isMouseInside(mouse)) {
-            if (this.onClickCallback) this.onClickCallback();
-        }
-        this.mouseDownLastFrame = !!mouseDown;
-    }
-
-    public handleMouseDown(mouse: IVec2): void {
-        if (this.isMouseInside(mouse) && this.onClickCallback) {
+        const isMouseDown = InputHandle.isMouseDown();
+        const mouseInside = this.isMouseInside(mouse);
+        
+        // Detect click: mouse was up last frame, now down, inside button, no cooldown
+        const isClicked = !this.wasMouseDownLastFrame && 
+                         isMouseDown && 
+                         mouseInside && 
+                         this.cooldownTimer <= 0;
+        
+        if (isClicked && this.onClickCallback) {
             this.onClickCallback();
+            this.cooldownTimer = 0.2; // Set cooldown after click
         }
+        
+        // Update state for next frame
+        this.wasMouseDownLastFrame = isMouseDown;
+        this.isPressed = isMouseDown && mouseInside;
     }
 
-    
+    // Remove handleMouseDown method to avoid duplicate handling
+    public isButtonPressed(): boolean {
+        return this.isPressed;
+    }
 }

@@ -4,13 +4,13 @@ import { Collision } from "../../../../Engine/ResourceManager/Collision";
 import { PlatformFactory } from "./CreatePlatform";
 import { SpringyPlatform } from "./CompositeSpring";
 import { Physic2D } from "../../../../Engine/Component/Physic2D";
-
+import { NobitaPlatform } from "./NobitaPlatform";
 export class PlatformManager {
     private platformList: Platform[] = [];
-    private readonly PLATFORM_COUNT: number = 30;
+    private readonly PLATFORM_COUNT: number = 10;
     private readonly PLATFORM_VERTICAL_SPACING: number = 100;
-    private readonly PLATFORM_MIN_SPAWN_DISTANCE: number = 80;
-    private readonly PLATFORM_MAX_SPAWN_DISTANCE: number = 120;
+    private readonly PLATFORM_MIN_SPAWN_DISTANCE: number = 90;
+    private readonly PLATFORM_MAX_SPAWN_DISTANCE: number = 150;
     private readonly SCREEN_WIDTH: number = 400;
     
     private player: GameObject;
@@ -33,9 +33,8 @@ export class PlatformManager {
     
     private createPlatformAtIndex(index: number): Platform {
         const x = this.generateRandomX();
-        const y = 600 + (index * -this.PLATFORM_VERTICAL_SPACING);
+        const y = 900 + (index * -this.PLATFORM_VERTICAL_SPACING);
         
-        // First few platforms should be normal for easier start
         const allowSpecialPlatforms = index > 2;
         
         return PlatformFactory.createRandomPlatform(x, y, allowSpecialPlatforms);
@@ -88,48 +87,53 @@ export class PlatformManager {
         const newX = this.generateRandomX();
         const newY = highestY - this.getRandomSpawnDistance();
         platform.resetPosition(newX, newY);
+        platform.onReset()
     }
     
     private getRandomSpawnDistance(): number {
         return this.PLATFORM_MIN_SPAWN_DISTANCE + 
-               Math.random() * (this.PLATFORM_MAX_SPAWN_DISTANCE - this.PLATFORM_MIN_SPAWN_DISTANCE);
+               Math.random() * (this.PLATFORM_MAX_SPAWN_DISTANCE - this.PLATFORM_MIN_SPAWN_DISTANCE)-20;
     }
     
-    public checkPlayerCollision(playerPhysics: Physic2D): boolean {
-        const playerHitbox = this.player.hitbox;
-        const collisionThreshold = 10;
+
+public checkPlayerCollision(playerPhysics: Physic2D): boolean {
+    const playerHitbox = this.player.hitbox;
+    const collisionThreshold = 10;
+    
+    for (const platform of this.platformList) {
+        if (!platform.isActivePlatform) continue;
         
-        for (const platform of this.platformList) {
-            if (!platform.isActivePlatform) continue;
-            
-            // Kiểm tra SpringyPlatform riêng biệt
-            if (platform instanceof SpringyPlatform) {
-                if (this.checkSpringyPlatformCollision(platform, playerPhysics)) {
-                    return true;
-                }
-            }
-            
-            // Kiểm tra collision với platform thông thường
-            if (this.isPlayerLandingOnPlatform(playerHitbox, platform, collisionThreshold)) {
+        if (platform instanceof NobitaPlatform) {
+            if (platform.checkSpringCollision(this.player)) {
                 this.handlePlayerLandingOnPlatform(platform, playerPhysics);
                 return true;
             }
         }
         
-        return false;
+        if (platform instanceof SpringyPlatform) {
+            if (this.checkSpringyPlatformCollision(platform, playerPhysics)) {
+                return true;
+            }
+        }
+        
+        if (this.isPlayerLandingOnPlatform(playerHitbox, platform, collisionThreshold)) {
+            this.handlePlayerLandingOnPlatform(platform, playerPhysics);
+            return true;
+        }
     }
+    
+    return false;
+}
     
     private checkSpringyPlatformCollision(springyPlatform: SpringyPlatform, playerPhysics: Physic2D): boolean {
         const playerHitbox = this.player.hitbox;
         const collisionThreshold = 10;
         
-        // Kiểm tra collision với spring trước
         if (springyPlatform.checkSpringCollision(this.player)) {
             this.handlePlayerLandingOnPlatform(springyPlatform, playerPhysics);
             return true;
         }
         
-        // Sau đó kiểm tra collision với platform
         if (this.isPlayerLandingOnPlatform(playerHitbox, springyPlatform, collisionThreshold)) {
             this.handlePlayerLandingOnPlatform(springyPlatform, playerPhysics);
             return true;
@@ -172,6 +176,7 @@ export class PlatformManager {
             const newX = this.generateRandomX();
             const newY = 600 + (i * -this.PLATFORM_VERTICAL_SPACING);
             this.platformList[i].resetPosition(newX, newY);
+            this.platformList[i].onReset();
         }
     }
     

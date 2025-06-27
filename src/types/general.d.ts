@@ -8,6 +8,7 @@ declare namespace Engine {
 
     interface IRenderer {
         render(image: HTMLImageElement, x: number, y: number): void;
+        fillRect(x: number, y: number, width: number, height: number, color: string): void;
         drawRect(x: number, y: number, width: number, height: number): void
         drawFrame(
         image: HTMLImageElement,
@@ -15,6 +16,14 @@ declare namespace Engine {
         dx: number, dy: number, dw: number, dh: number
     ): void
         getCanvas(): HTMLCanvasElement
+        public drawText(
+    text: string, 
+    x: number, 
+    y: number, 
+    font: string = "20px Arial", 
+    textAlign: CanvasTextAlign = "center", 
+    color: string = "black"
+): void
 
     }
     interface IPhysic2D extends IComponent{
@@ -26,13 +35,16 @@ declare namespace Engine {
         enableGravity(enable: boolean): void;
         addForce(force: IVec2): void;
     }
-
+    interface IAnimation extends IComponent{
+        update(deltaTime: number):void;
+        render(renderer: Renderer, x: number, y: number): void;
+    }
     interface IGameObject{
         position: IVec2;
         size: { width: number; height: number };
         active: boolean;
         AddComponent(cpn: IComponent): void;
-        getComponentByName(name: string): IComponent | undefined;
+        //getComponentByName(name: string): IComponent | undefined;
         Update(deltaTime: number): void;
         Render(renderer: IRenderer): void;
     }

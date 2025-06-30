@@ -1,5 +1,5 @@
 import { Platform } from "./Platform";
-
+import { AudioManager } from "../../../../Engine/ResourceManager/AudioManager";
 export class MovingPlatform extends Platform {
     private originalX: number;
     private moveDirection: number;
@@ -20,9 +20,14 @@ export class MovingPlatform extends Platform {
     }
     
     protected updatePlatformSpecific(deltaTime: number): void {
+       
         this.updateMovement(deltaTime);
     }
-    
+    protected handlePlayerLanding(): void {
+         const audioManager = AudioManager.getInstance();
+                    audioManager.loadSound('jump', 'assets/images/jump.mp3');
+                    audioManager.playSound('jump', 0.8)
+    }
     private updateMovement(deltaTime: number): void {
         this.position.x += this.moveSpeed * this.moveDirection * deltaTime;
         

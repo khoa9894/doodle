@@ -1945,14 +1945,16 @@ class ListObject {
     }
     Init() {
         this.anim1 = new Animation();
-        this.anim1.setTexture(ResourceManager.getInstance().getTexture('jump-left'));
         this.anim1.setNumframe({ x: 1, y: 1 });
         this.anim1.setFrameTime(0);
         this.listGame.push(this.Background);
         this.Player.AddComponent(this.anim1);
-        this.Background.AddImage(ResourceManager.getInstance().getTexture('loading'));
         this.Collision.addHitBox(this.PlayerHitbox);
         this.Collision.addHitBox(this.baseHitbox);
+    }
+    concac() {
+        this.anim1.setTexture(ResourceManager.getInstance().getTexture('jump-left'));
+        this.Background.AddImage(ResourceManager.getInstance().getTexture('loading'));
     }
     update(deltaTime) {
         for (const game of this.listGame) {
@@ -2018,6 +2020,7 @@ class DashboardScene extends Scene {
     Init() {
         this.Butt.AddImage(ResourceManager.getInstance().getTexture('play'));
         this.loadScores();
+        this.ListObject.concac();
         this.isFirstLoad = false;
     }
     loadScores() {

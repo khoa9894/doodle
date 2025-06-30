@@ -15,6 +15,8 @@ export class DashboardScene extends Scene {
     constructor() {
         super();
         this.ListObject = new ListObject();
+                this.ListObject.Init();
+
         this.Butt = new Button({ x: 100, y: 50 }, { x: 200, y: 300 });
         
         this.Butt.setOnClick(() => {
@@ -30,7 +32,6 @@ export class DashboardScene extends Scene {
     }
     
     public Init(): void {
-        this.ListObject.Init();
         this.Butt.AddImage(ResourceManager.getInstance().getTexture('play'));
         
         this.loadScores();
@@ -38,7 +39,7 @@ export class DashboardScene extends Scene {
     }
     
     private loadScores(): void {
-        const savedHighScore = localStorage.getItem('doodleJumpHighScore');
+        const savedHighScore = localStorage.getItem('doodleJump_highScore');
         if (savedHighScore) {
             this.highScore = parseInt(savedHighScore);
         }

@@ -20,13 +20,16 @@ export class HitBox extends Component implements Engine.IHitBox {
         return this.pos.x;
     }
     public render(renderer: Engine.IRenderer, x: number, y: number): void {
-       // renderer.drawRect(x, y, this.width, this.height);
+   //   if(this.active)  renderer.drawRect(x, y, this.width, this.height);
     }
     public getPosY(): number {
         return this.pos.y;
     }
-    public setDeActive() {
-        this.active = false;
+    public getActive():boolean{
+        return this.active
+    }
+    public setDeActive(hi:boolean) {
+        this.active = hi;
     }
     public getWidth(): number {
         return this.width;
@@ -35,6 +38,7 @@ export class HitBox extends Component implements Engine.IHitBox {
         return this.height;
     }
     public intersects(other: Engine.IHitBox): boolean {
+        if(!this.active) return false;
         return !(
             this.pos.x + this.width < other.getPosX() ||
             this.pos.x > other.getPosX() + other.getWidth() ||

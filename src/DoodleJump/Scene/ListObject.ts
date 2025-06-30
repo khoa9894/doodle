@@ -1,3 +1,5 @@
+import { Player } from './Object/Player/Player';
+import { HitBox } from './../../Engine/Component/HitBox';
 import { Collision } from './../../Engine/ResourceManager/Collision';
 import { Animation } from './../../Engine/Component/Animation';
 import { Physic2D } from './../../Engine/Component/Physic2D';
@@ -7,6 +9,8 @@ import { Scene } from "../../Engine/GameScene/Scene/Scene";
 export class ListObject{
     private anim1: Animation;
         private Background: GameObject;
+        private PlayerHitbox:HitBox
+        private baseHitbox:HitBox
         private Physic2D: Physic2D;
         private base: GameObject;
         private Player:GameObject;
@@ -17,22 +21,30 @@ export class ListObject{
     constructor(){
          this.Background = new GameObject({ x: 0, y: 0 }, { width: 900, height: 900 });
                 this.Player=new GameObject({ x: 80, y: 480 },{width: 60, height: 60});
+                this.PlayerHitbox=new HitBox({ x: 80, y: 480 }, 60, 60);
+
                 this.base=new GameObject({ x: 80, y: 540 },{width: 60, height: 20});
+                this.baseHitbox=new HitBox({ x: 80, y: 540 }, 60, 20);
+                this.Player.AddComponent(this.PlayerHitbox)
+                this.base.AddComponent(this.baseHitbox)
                 this.Collision=new Collision();
-                this.Physic2D=new Physic2D({ x: 80, y: 480 }, this.Player.hitbox);
+                this.Physic2D=new Physic2D({ x: 80, y: 480 }, this.Player);
                 this.Player.AddComponent(this.Physic2D);
                 this.listGame.push(this.Player);
                 this.listGame.push(this.base);
     }
     public Init(): void{
         
-        this.anim1= new Animation(ResourceManager.getInstance().getTexture('blue-lik-left'), { x: 1, y: 1 }, 0.1);
+        this.anim1= new Animation();
+        this.anim1.setTexture(ResourceManager.getInstance().getTexture('jump-left'))
+         this.anim1.setNumframe({x: 1, y: 1});
+        this.anim1.setFrameTime(0);
         this.listGame.push(this.Background);
         this.Player.AddComponent(this.anim1)
         
         this.Background.AddImage(ResourceManager.getInstance().getTexture('loading'))
-        this.Collision.addHitBox(this.Player.hitbox);
-        this.Collision.addHitBox(this.base.hitbox);
+        this.Collision.addHitBox(this.PlayerHitbox);
+        this.Collision.addHitBox(this.baseHitbox);
     }
     public update(deltaTime: number): void {
         

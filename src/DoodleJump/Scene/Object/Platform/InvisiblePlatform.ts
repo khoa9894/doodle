@@ -1,6 +1,6 @@
 import { Platform } from "./Platform";
 import { ResourceManager } from '../../../../Engine/ResourceManager/resourceManage';
-
+import { AudioManager } from "../../../../Engine/ResourceManager/AudioManager";
 export class InvisiblePlatform extends Platform {
     private respawnTime: number;
     private respawnTimer: number;
@@ -14,6 +14,7 @@ export class InvisiblePlatform extends Platform {
     
     constructor(x: number, y: number, respawnTime: number = 2000) {
         super(x, y, -500);
+        console.log('invi',x,y)
         this.respawnTime = respawnTime;
         this.respawnTimer = 0;
         this.originalY = y;
@@ -30,6 +31,11 @@ export class InvisiblePlatform extends Platform {
         if (!this.isTriggered) {
             this.triggerDisappear();
         }
+          
+                    const audioManager = AudioManager.getInstance();
+                        audioManager.loadSound('jump', 'assets/images/break.mp3');
+                        audioManager.playSound('jump', 0.8)
+            
     }
     
     private triggerDisappear(): void {
@@ -38,14 +44,15 @@ export class InvisiblePlatform extends Platform {
     }
     
     public Render(renderer: Engine.IRenderer): void {
-        if (!this.isActive) return;
-        const currentTexture = this.isTriggered ? this.afterTexture : this.beforeTexture;
-        renderer.render(
-            currentTexture, 
-            this.position.x, 
-            this.position.y,
-        );
+    if (!this.isActive) return;
+    
+    const currentTexture = this.isTriggered ? this.afterTexture : this.beforeTexture;
+    renderer.render(currentTexture, this.position.x, this.position.y);
+    
+    for (const component of this._listComponent) {
+        component.render(renderer, this.position.x, this.position.y);
     }
+}
     
     private breakPlatform(): void {
         this.isActive = false;
@@ -55,17 +62,14 @@ export class InvisiblePlatform extends Platform {
     }
     
     protected updatePlatformSpecific(deltaTime: number): void {
-        // Nếu đã trigger và còn timer
         if (this.isTriggered && this.disappearTimer > 0 && this.isActive) {
             this.disappearTimer -= deltaTime * 1000;
             
-            // Khi hết timer, platform biến mất
             if (this.disappearTimer <= 0) {
                 this.breakPlatform();
             }
         }
         
-        // Nếu không active và đang trong thời gian respawn
         if (!this.isActive && this.respawnTimer > 0) {
             this.respawnTimer -= deltaTime * 1000;
             if (this.respawnTimer <= 0) {
@@ -79,7 +83,7 @@ export class InvisiblePlatform extends Platform {
         this.isTriggered = false; 
         this.disappearTimer = 0;
         this.position.y = this.originalY; 
-        this.hitbox.setPosition(this.position);
+        this.getHitBox().setPosition(this.position);
     }
     
     public resetPosition(x: number, y: number): void {
@@ -95,6 +99,6 @@ export class InvisiblePlatform extends Platform {
         this.isActive = true;
         this.disappearTimer = 0;
         this.position.y = this.originalY;
-        this.hitbox.setPosition(this.position);
+        this.getHitBox().setPosition(this.position);
     }
 }

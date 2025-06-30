@@ -43,7 +43,6 @@ export class Button extends GameObject {
         const isMouseDown = InputHandle.isMouseDown();
         const mouseInside = this.isMouseInside(mouse);
         
-        // Detect click: mouse was up last frame, now down, inside button, no cooldown
         const isClicked = !this.wasMouseDownLastFrame && 
                          isMouseDown && 
                          mouseInside && 
@@ -59,7 +58,6 @@ export class Button extends GameObject {
         this.isPressed = isMouseDown && mouseInside;
     }
 
-    // Remove handleMouseDown method to avoid duplicate handling
     public isButtonPressed(): boolean {
         return this.isPressed;
     }

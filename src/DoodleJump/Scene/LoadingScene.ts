@@ -9,11 +9,36 @@ export class LoadingScene extends Scene {
     constructor() {
         super();
         this.assetsToLoad = [
+            // UI Assets
             'background',
             'play',
             'loading',
-            'blue-lik-left',
+            
             'platform',
+            'spring',
+            'invi',
+            
+            'jump-left',
+            'jump-right',
+            'touch-left',
+            'touch-right',
+            'walk_look up',
+            'flying',
+            
+            'duma',
+            'stretch',
+            'rocket',
+            'stool',
+            
+            'concu',
+            'dicho',
+            'ditconme',
+            'chode',
+            
+            'space',
+            'Default',
+            'after',
+            'before'
         ];
     }
 
@@ -23,20 +48,15 @@ export class LoadingScene extends Scene {
 
     private async startLoading(): Promise<void> {
         const resourceManager = ResourceManager.getInstance();
-
-        // Tải tất cả tài nguyên
-        const promises = this.assetsToLoad.map(assetName => 
-            this.loadAsset(resourceManager, assetName)
-        );
         
-        await Promise.all(promises);
+        for (const assetName of this.assetsToLoad) {
+            resourceManager.addTexture(assetName);
+        }
         
-        // Chờ thêm 500ms để đảm bảo người dùng thấy màn hình loading
-        await this.delay(500);
+        await this.delay(600);
         
         this.loadingComplete = true;
         
-        // Khởi tạo các scene và chuyển đến dashboard
         this.initializeGameScenes();
         SceneManager.getInstance().changeSceneByName('DashboardScene');
     }
@@ -56,19 +76,6 @@ export class LoadingScene extends Scene {
         }
     }
 
-    private loadAsset(resourceManager: ResourceManager, assetName: string): Promise<void> {
-        return new Promise((resolve) => {
-            const img = resourceManager.getTexture(assetName);
-            
-            if (img.complete) {
-                resolve();
-            } else {
-                img.onload = () => resolve();
-                img.onerror = () => resolve(); // Cứ tiếp tục ngay cả khi lỗi
-            }
-        });
-    }
-
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -76,8 +83,10 @@ export class LoadingScene extends Scene {
     public render(renderer: Engine.IRenderer): void {
         const canvas = renderer.getCanvas();
         
+        // Màn hình trắng
         renderer.fillRect(0, 0, canvas.width, canvas.height, '#FFFFFF');
         
+        // Chữ "Loading"
         renderer.drawText(
             "Loading...", 
             canvas.width / 2, 

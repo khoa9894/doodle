@@ -7,10 +7,12 @@ export class Application{
     private lastTime: number = 0;
     public Init():void{
         SceneBootstrapper.bootstrapScenes();
-        
+        SceneManager.getInstance().changeSceneByName('LoadingScene');
+        ;
         this.Renderer=new Renderer();
         InputHandle.initialize( this.Renderer.getCanvas());
         //SceneManager.getInstance().changeSceneByName('DashboardScene')
+
     }
     public Run():void{
         this.Init();

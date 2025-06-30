@@ -1,7 +1,7 @@
 //import { PlayScene } from './../../../DoodleJump/Scene/Play';
 import { Scene } from "./Scene";
 import { PlayScene } from '../../../DoodleJump/Scene/Play';
-import { DashboardScene } from '../../../DoodleJump/Scene/Dashboard';
+// import { DashboardScene } from '../../../DoodleJump/Scene/Dashboard';
 export type SceneName = string;
 
 export class SceneManager {

@@ -8,6 +8,7 @@ export class MovingPlatform extends Platform {
     
     constructor(x: number, y: number, moveSpeed: number = 50, moveRange: number = 100) {
         super(x, y, -500);
+        console.log('move', x, y)
         this.originalX = x;
         this.moveDirection = 1;
         this.moveSpeed = moveSpeed;
@@ -43,7 +44,7 @@ export class MovingPlatform extends Platform {
             this.moveDirection = -1;
         }
         
-        this.hitbox.setPosition(this.position);
+        this.getHitBox().setPosition(this.position);
     }
     
     public onReset(): void {

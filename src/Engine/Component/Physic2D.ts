@@ -1,29 +1,32 @@
+import { GameObject } from './../GameObject/GameObject';
 import { HitBox } from './HitBox';
 import { Component } from './Component';
 
 export class Physic2D extends Component implements Engine.IPhysic2D{
     private velocity: IVec2;
     private acceleration: IVec2;
-    private hitbox: Engine.IHitBox
+    private GameObject: Engine.IGameObject
     private position: IVec2;
     private gravity: number; 
     private useGravity: boolean;
+    private reverseGravity: boolean=false;
     private totalTime: number = 0;
     private startY: number;
     private startX: number;
 
     constructor(
         position: IVec2,
-        hitbox: Engine.IHitBox,
+        GameObject: Engine.IGameObject,
         velocity = { x: 0, y: 0 },
         acceleration = { x: 0, y: 0 },
         gravity = 980, 
         useGravity = true,
+      //  reverseGravity=false,
 
     ) {
         super();
         
-        this.hitbox = hitbox;
+        this.GameObject = GameObject;
         this.position = position;
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -31,17 +34,25 @@ export class Physic2D extends Component implements Engine.IPhysic2D{
         this.useGravity = useGravity;
         this.startY = position.y;
         this.startX = position.x;
+        
     }
 
     public Init(): void {
     }
-
+    public setReverse(hi:boolean):void{
+        this.reverseGravity=hi
+    }
     public update(deltaTime: number): void {
+        if(!this.reverseGravity){
     this.velocity.y += this.gravity * deltaTime;  
     this.position.x += this.velocity.x * deltaTime;
     this.position.y += this.velocity.y * deltaTime;
-    
-    this.hitbox.setPosition(this.position);
+    this.GameObject.setPosition(this.position);}
+       else{
+         this.velocity.y += this.gravity * deltaTime;  
+         this.position.x += this.velocity.x * deltaTime;
+         this.position.y -= this.velocity.y * deltaTime;
+       }
 }
     public render(): void {
     }

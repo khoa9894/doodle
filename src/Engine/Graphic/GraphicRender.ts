@@ -4,9 +4,18 @@ export class Renderer implements Engine.IRenderer {
     private initialized = false;
 
     constructor() {
-        this.canvas = document.createElement('canvas');
-        this.canvas.width = 500;
-        this.canvas.height = 750;
+                this.canvas = document.createElement('canvas');
+         const w = 500 // 448
+        const h = 750  // 640
+        this.canvas.width  = w;
+        this.canvas.height = h;
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        const scale = Math.min(vw / w, vh / h);
+        this.canvas.style.width  = `${w * scale}px`;
+        this.canvas.style.height = `${h * scale}px`;
         this.canvas.style.display = 'block';
         this.canvas.style.margin = '0 auto';
         this.canvas.style.position = 'relative';

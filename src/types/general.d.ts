@@ -34,15 +34,19 @@ declare namespace Engine {
         setGravity(g: number): void;
         enableGravity(enable: boolean): void;
         addForce(force: IVec2): void;
+        setReverse(hi:boolean): void;
+
     }
     interface IAnimation extends IComponent{
         update(deltaTime: number):void;
+        setFrameTime(frameTime: number):void
         render(renderer: Renderer, x: number, y: number): void;
     }
     interface IGameObject{
         position: IVec2;
         size: { width: number; height: number };
         active: boolean;
+        setPosition(pos: IVec2): void;
         AddComponent(cpn: IComponent): void;
         //getComponentByName(name: string): IComponent | undefined;
         Update(deltaTime: number): void;
@@ -55,7 +59,7 @@ declare namespace Engine {
         getPosY(): number;
         getWidth(): number;
         getHeight(): number;
-        setDeActive(): void;
+        setDeActive(hi:boolean): void;
         intersects(other: IHitBox): boolean;
     }
 

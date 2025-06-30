@@ -41,7 +41,7 @@ export class StateManage {
         if (this.stack.length > 0) {
             this.stack[this.stack.length - 1].resume();
         }
-        this.currentState = this.stack[this.stack.length - 1] || null;
+        this.currentState = this.stack[this.stack.length - 1];
     }
 
     public performStateChange() {

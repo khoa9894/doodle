@@ -132,6 +132,7 @@ export class PlayScene extends Scene {
     
     private handleCollisions(): void {
         this.platformManager.checkPlayerCollision(this.player.getPhysics());
+        if(this.platformManager.checkPlayerCollision(this.player.getPhysics())) console.log('i love u')
         this.boostManager.checkPlayerCollision();
     }
     

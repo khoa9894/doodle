@@ -11,6 +11,7 @@ export class MovingPlatform extends Platform {
         console.log('move', x, y)
         this.originalX = x;
         this.moveDirection = 1;
+        
         this.moveSpeed = moveSpeed;
         this.moveRange = moveRange;
     }

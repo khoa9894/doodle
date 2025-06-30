@@ -57,7 +57,9 @@ export class Player {
         this.current_state = this.JumpingState;
         console.log('ditme');
     }
-
+    public getAni():Animation{
+        return this.Animation
+    }
     public changeState(newState: IDoodleState): void {
         this.current_state = newState;
         this.current_state.Init();

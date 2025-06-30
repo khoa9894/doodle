@@ -6,45 +6,35 @@ import {IDoodleState} from "./PlayerState"
 
 export class DoodleLanding implements IDoodleState{
     private Player: Player
-    private Animation: Animation | null = null;
+    private Animation: Animation 
     private readonly SIZE = { width: 40, height: 40 };
     private readonly SCREEN_WIDTH: number = 400;
     
     constructor(player:Player){
         this.Player = player;
-        // Don't get Animation in constructor, get it when needed
+        this.Animation=this.Player.getAni()
     }
     
-    private getAnimation(): Animation | null {
-        if (!this.Animation) {
-            this.Animation = this.Player.getGameObject().getAnimation() as Animation;
-        }
-        return this.Animation;
-    }
+    
     
     public Init(): void {
         this.setLandingTexture()
     }
     
     private setLandingTexture(): void {
-        const animation = this.getAnimation();
-        if (!animation) {
-            console.warn('Animation component not available in DoodleLanding');
-            return;
-        }
         
         if (this.Player.getIsLeft()) {
-            animation.setTexture(ResourceManager.getInstance().getTexture('touch-left'));
+            this.Animation.setTexture(ResourceManager.getInstance().getTexture('touch-left'));
         } else {
-            animation.setTexture(ResourceManager.getInstance().getTexture('touch-right'));
+            this.Animation.setTexture(ResourceManager.getInstance().getTexture('touch-right'));
         }
-        animation.setNumframe({x:1,y:1});
-        animation.setFrameTime(0);
+        this.Animation.setNumframe({x:1,y:1});
+        this.Animation.setFrameTime(0);
     }
     
     private handleInput(): void {
         const currentVelocity = this.Player.getPhysics().getVelocity();
-        const animation = this.getAnimation();
+        const animation = this.Animation
         
         if (!animation) {
             return;
@@ -97,7 +87,7 @@ export class DoodleLanding implements IDoodleState{
     }
     
     public flip(): void {
-        const animation = this.getAnimation();
+        const animation = this.Animation;
         if (!animation) {
             return;
         }

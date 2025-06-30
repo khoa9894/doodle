@@ -2,37 +2,42 @@ import { SceneBootstrapper } from './Engine/GameScene/Scene/SceneInit';
 import { Renderer } from './Engine/Graphic/GraphicRender';
 import { SceneManager } from './Engine/GameScene/Scene/SceneManager';
 import { InputHandle } from './Engine/InputHandle/InputHandle';
-export class Application{
+
+export class Application {
     private Renderer: Renderer;
     private lastTime: number = 0;
-    public Init():void{
+    
+    public Init(): void {
+        
+        this.Renderer = new Renderer();
+        InputHandle.initialize(this.Renderer.getCanvas());
+        
         SceneBootstrapper.bootstrapScenes();
-        SceneManager.getInstance().changeSceneByName('LoadingScene');
-        ;
-        this.Renderer=new Renderer();
-        InputHandle.initialize( this.Renderer.getCanvas());
-        //SceneManager.getInstance().changeSceneByName('DashboardScene')
-
+        SceneManager.getInstance().changeSceneByName('PlayScene');
     }
-    public Run():void{
+    
+    public Run(): void {
         this.Init();
         this.lastTime = performance.now();
+        
         const loop = () => {
             const now = performance.now();
             const deltaTime = (now - this.lastTime) / 1000;
             this.lastTime = now;
+            
             this.Update(deltaTime);
             this.Render();
             requestAnimationFrame(loop);
         };
+        
         requestAnimationFrame(loop);
     }
-    public Update(deltaTime: number){
+    
+    public Update(deltaTime: number) {
         SceneManager.getInstance().getCurrentScene()?.update(deltaTime);
-        //SceneManager.getInstance().getCurrentSceneByName()
     }
-    public Render(){
-         SceneManager.getInstance().getCurrentScene()?.render(this.Renderer);
-
+    
+    public Render() {
+        SceneManager.getInstance().getCurrentScene()?.render(this.Renderer);
     }
 }

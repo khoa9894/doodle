@@ -6,22 +6,17 @@ import { IDoodleState } from "./PlayerState";
 
 export class DoodleSpring implements IDoodleState {
     private Player: Player;
-    private Animation: Animation | null = null;
+    private Animation: Animation
     private readonly SCREEN_WIDTH: number = 400;
     private readonly MOVE_SPEED: number = 300;
     private readonly SPRING_VELOCITY_THRESHOLD: number = -1000; // Spring effect threshold
     
     constructor(player: Player) {
         this.Player = player;
-        // Don't get Animation in constructor, get it when needed
+        this.Animation=this.Player.getAni()
     }
     
-    private getAnimation(): Animation | null {
-        if (!this.Animation) {
-            this.Animation = this.Player.getGameObject().getAnimation() as Animation;
-        }
-        return this.Animation;
-    }
+   
     
     public Init(): void {
         console.log('g')
@@ -31,7 +26,7 @@ export class DoodleSpring implements IDoodleState {
     }
     
     private setJumpTexture(): void {
-        const animation = this.getAnimation();
+        const animation = this.Animation
         if (!animation) {
             console.warn('Animation component not available in DoodleSpring');
             return;
@@ -49,7 +44,7 @@ export class DoodleSpring implements IDoodleState {
     
     private handleInput(): void {
         const currentVelocity = this.Player.getPhysics().getVelocity();
-        const animation = this.getAnimation();
+        const animation = this.Animation
         
         if (!animation) {
             return;

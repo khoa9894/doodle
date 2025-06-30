@@ -20,7 +20,7 @@ export class HitBox extends Component implements Engine.IHitBox {
         return this.pos.x;
     }
     public render(renderer: Engine.IRenderer, x: number, y: number): void {
-   //   if(this.active)  renderer.drawRect(x, y, this.width, this.height);
+     if(this.active)  renderer.drawRect(x, y, this.width, this.height);
     }
     public getPosY(): number {
         return this.pos.y;

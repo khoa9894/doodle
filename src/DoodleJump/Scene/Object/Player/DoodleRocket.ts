@@ -8,7 +8,7 @@ import {IDoodleState} from "./PlayerState"
 
 export class DoodleRocket implements IDoodleState{
     private Player: Player
-    private Animation: Animation | null = null;
+    private Animation: Animation
     private readonly SCREEN_WIDTH: number = 400;
     private animationSetup: boolean = false;
     private rocketTimer: number = 0;
@@ -16,15 +16,9 @@ export class DoodleRocket implements IDoodleState{
     
     constructor(player:Player){
         this.Player = player;
-        // Don't get Animation in constructor, get it when needed
+        this.Animation=this.Player.getAni()
     }
     
-    private getAnimation(): Animation | null {
-        if (!this.Animation) {
-            this.Animation = this.Player.getGameObject().getAnimation() as Animation;
-        }
-        return this.Animation;
-    }
     
     public Init(): void {
         this.setupRocketAnimation();
@@ -33,7 +27,7 @@ export class DoodleRocket implements IDoodleState{
     }
     
     private setupRocketAnimation(): void {
-        const animation = this.getAnimation();
+        const animation = this.Animation;
         if (!animation) {
             console.warn('Animation component not available in DoodleRocket');
             return;

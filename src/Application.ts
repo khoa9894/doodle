@@ -13,7 +13,7 @@ export class Application {
         InputHandle.initialize(this.Renderer.getCanvas());
         
         SceneBootstrapper.bootstrapScenes();
-        SceneManager.getInstance().changeSceneByName('PlayScene');
+        SceneManager.getInstance().changeSceneByName('LoadingScene');
     }
     
     public Run(): void {

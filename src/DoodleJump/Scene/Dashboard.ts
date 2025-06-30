@@ -15,7 +15,8 @@ export class DashboardScene extends Scene {
     constructor() {
         super();
         this.ListObject = new ListObject();
-                this.ListObject.Init();
+                
+        this.ListObject.Init();
 
         this.Butt = new Button({ x: 100, y: 50 }, { x: 200, y: 300 });
         
@@ -33,8 +34,8 @@ export class DashboardScene extends Scene {
     
     public Init(): void {
         this.Butt.AddImage(ResourceManager.getInstance().getTexture('play'));
-        
         this.loadScores();
+        this.ListObject.concac()
         this.isFirstLoad = false;
     }
     

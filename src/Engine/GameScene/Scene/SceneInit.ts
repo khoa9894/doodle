@@ -10,7 +10,7 @@ export class SceneBootstrapper {
         const loadingScene = new LoadingScene();
         const dashboardScene = new DashboardScene();
         const playScene = new PlayScene();
-                SceneManager.getInstance().AddScene('LoadingScene', loadingScene);
+        SceneManager.getInstance().AddScene('LoadingScene', loadingScene);
         SceneManager.getInstance().AddScene('DashboardScene', dashboardScene);
         SceneManager.getInstance().AddScene('PlayScene', playScene);
         

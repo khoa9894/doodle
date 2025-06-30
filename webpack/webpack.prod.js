@@ -12,6 +12,7 @@ const prod = {
     chunkFilename: '[name].[contenthash].chunk.js'
   },
   optimization: {
+    minimize: false, 
     splitChunks: {
       cacheGroups: {
         commons: {

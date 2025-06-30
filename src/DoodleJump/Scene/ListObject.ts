@@ -36,15 +36,19 @@ export class ListObject{
     public Init(): void{
         
         this.anim1= new Animation();
-        this.anim1.setTexture(ResourceManager.getInstance().getTexture('jump-left'))
          this.anim1.setNumframe({x: 1, y: 1});
         this.anim1.setFrameTime(0);
         this.listGame.push(this.Background);
         this.Player.AddComponent(this.anim1)
         
-        this.Background.AddImage(ResourceManager.getInstance().getTexture('loading'))
         this.Collision.addHitBox(this.PlayerHitbox);
         this.Collision.addHitBox(this.baseHitbox);
+    }
+    public concac():void{
+        this.anim1.setTexture(ResourceManager.getInstance().getTexture('jump-left'))
+                this.Background.AddImage(ResourceManager.getInstance().getTexture('loading'))
+
+
     }
     public update(deltaTime: number): void {
         

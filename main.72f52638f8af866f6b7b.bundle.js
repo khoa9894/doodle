@@ -193,8 +193,7 @@ class HitBox extends Component {
         return this.pos.x;
     }
     render(renderer, x, y) {
-        if (this.active)
-            renderer.drawRect(x, y, this.width, this.height);
+        // if(this.active)  renderer.drawRect(x, y, this.width, this.height);
     }
     getPosY() {
         return this.pos.y;
@@ -2240,7 +2239,7 @@ class Application {
         this.Renderer = new Renderer();
         InputHandle.initialize(this.Renderer.getCanvas());
         SceneBootstrapper.bootstrapScenes();
-        SceneManager.getInstance().changeSceneByName('PlayScene');
+        SceneManager.getInstance().changeSceneByName('LoadingScene');
     }
     Run() {
         this.Init();
